@@ -46,7 +46,7 @@ team_t team = {
 int mm_init(void);
 
 void *mm_malloc(size_t size);
-void *mm_realloc(void *bp, size_t size);
+void *mm_realloc(void *ptr, size_t size);
 void mm_free(void *bp);
 
 static void *extend_heap(size_t words);
@@ -115,21 +115,21 @@ void *mm_malloc(size_t size)
 }
 
 /* mm_realloc - Implemented simply in terms of mm_malloc and mm_free */
-void *mm_realloc(void *bp, size_t size)
+void *mm_realloc(void *ptr, size_t size)
 {
-    void *oldbp = bp;
-    void *newbp;
+    void *oldptr = ptr;
+    void *newptr;
     size_t copySize;
 
-    newbp = mm_malloc(size);
-    if (newbp == NULL)
+    newptr = mm_malloc(size);
+    if (newptr == NULL)
         return NULL;
-    copySize = *(size_t *)((char *)oldbp - SIZE_T_SIZE);
+    copySize = *(size_t *)((char *)oldptr - SIZE_T_SIZE);
     if (size < copySize)
         copySize = size;
-    memcpy(newbp, oldbp, copySize);
-    mm_free(oldbp);
-    return newbp;
+    memcpy(newptr, oldptr, copySize);
+    mm_free(oldptr);
+    return newptr;
 }
 
 /* mm_free - Freeing a block does nothing. */
