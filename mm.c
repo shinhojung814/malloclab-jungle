@@ -29,6 +29,10 @@ team_t team = {
     "Shinho Jung",
     /* First member's email address */
     "shinhojung814@gmail.com",
+    /* Second member's full name (leave blank if none) */
+    "Kangho Kim",
+    /* Second member's email address (leave blank if none) */
+    "ariaskkh@gmail.com"
     };
 
 /* single word (4) or double word (8) alignment */
