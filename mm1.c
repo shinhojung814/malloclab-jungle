@@ -7,6 +7,14 @@
 #include "mm.h"
 #include "memlib.h"
 
+/* single word (4) or double word (8) alignment */
+#define ALIGNMENT 8
+
+/* rounds up to the nearest multiple of ALIGNMENT */
+#define ALIGN(size) (((size) + (ALIGNMENT - 1)) & ~0x7)
+
+#define SIZE_T_SIZE (ALIGN(sizeof(size_t)))
+
 /* 가용 리스트 조작을 위한 기본 상수와 매크로 */
 
 /* 워드와 헤더/풋터의 크기 */
@@ -122,7 +130,7 @@ void mm_free(void *bp)
 
     PUT(HDRP(bp), PACK(size, 0));
     PUT(FTRP(bp), PACK(size, 0));
-    coalesece(bp);
+    coalesce(bp);
 }
 
 /* mm_realloc - Implemented simply in terms of mm_malloc and mm_free */
