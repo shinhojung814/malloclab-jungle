@@ -9,6 +9,7 @@
  * NOTE TO STUDENTS: Replace this header comment with your own header
  * comment that gives a high level description of your solution.
  */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -30,10 +31,9 @@ team_t team = {
     /* First member's email address */
     "shinhojung814@gmail.com",
     /* Second member's full name (leave blank if none) */
-    "Kangho Kim",
+    "Shinho Jung",
     /* Second member's email address (leave blank if none) */
-    "ariaskkh@gmail.com"
-    };
+    "shinhojung814@gmail.com"};
 
 /* single word (4) or double word (8) alignment */
 #define ALIGNMENT 8
@@ -180,7 +180,7 @@ static void *coalesce(void *bp)
     }
 
     /* Case 2 */
-    else if (prev_alloc && next_alloc)
+    else if (prev_alloc && !next_alloc)
     {
         size += GET_SIZE(HDRP(NEXT_BLKP(bp)));
         PUT(HDRP(bp), PACK(size, 0));
@@ -211,6 +211,7 @@ static void *coalesce(void *bp)
 
 static void *find_fit(size_t asize)
 {
+    /* First-fit search */
     void *bp;
 
     for (bp = heap_listp; GET_SIZE(HDRP(bp)) > 0; bp = NEXT_BLKP(bp))
@@ -220,6 +221,8 @@ static void *find_fit(size_t asize)
             return bp;
         }
     }
+
+    /* No fit */
     return NULL;
 }
 
