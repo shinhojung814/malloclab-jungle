@@ -46,7 +46,7 @@ team_t team = {
 int mm_init(void);
 
 void *mm_malloc(size_t size);
-void *mm_realloc(void *ptr, size_t size);
+void *mm_realloc(void *bp, size_t size);
 void mm_free(void *bp);
 
 static void *extend_heap(size_t words);
@@ -115,21 +115,21 @@ void *mm_malloc(size_t size)
 }
 
 /* mm_realloc - Implemented simply in terms of mm_malloc and mm_free */
-void *mm_realloc(void *ptr, size_t size)
+void *mm_realloc(void *bp, size_t size)
 {
-    void *oldptr = ptr;
-    void *newptr;
+    void *oldbp = bp;
+    void *newbp;
     size_t copySize;
 
-    newptr = mm_malloc(size);
-    if (newptr == NULL)
+    newbp = mm_malloc(size);
+    if (newbp == NULL)
         return NULL;
-    copySize = *(size_t *)((char *)oldptr - SIZE_T_SIZE);
+    copySize = *(size_t *)((char *)oldbp - SIZE_T_SIZE);
     if (size < copySize)
         copySize = size;
-    memcpy(newptr, oldptr, copySize);
-    mm_free(oldptr);
-    return newptr;
+    memcpy(newbp, oldbp, copySize);
+    mm_free(oldbp);
+    return newbp;
 }
 
 /* mm_free - Freeing a block does nothing. */
@@ -142,14 +142,12 @@ void mm_free(void *bp)
     coalesce(bp);
 }
 
-/* 힙을 CHUNKSIZE 바이트로 확장하고 초기 가용 블록을 생성 */
 static void *extend_heap(size_t words)
 {
     char *bp;
     size_t size;
 
     /* Allocate an even number of words to maintain alignment */
-    /* 요청한 크기를 인접 2워드의 배수(8바이트)로 올림 후 메모리 시스템으로부터 추가적인 힙 공간 요청 */
     size = (words % 2) ? (words + 1) * WSIZE : words * WSIZE;
     if ((long)(bp = mem_sbrk(size)) == -1)
         return NULL;
@@ -163,7 +161,6 @@ static void *extend_heap(size_t words)
     PUT(HDRP(NEXT_BLKP(bp)), PACK(0, 1));
 
     /* Coalesce if the previous block was free */
-    /* 이전 힙이 가용 블록으로 끝났다면, 두 개의 가용 블록을 통합한 후 블록의 블록 포인터를 리턴 */
     return coalesce(bp);
 }
 
