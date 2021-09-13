@@ -15,6 +15,7 @@
 #include <assert.h>
 #include <unistd.h>
 #include <string.h>
+#include <string.h>
 
 #include "mm.h"
 #include "memlib.h"
@@ -31,9 +32,9 @@ team_t team = {
     /* First member's email address */
     "shinhojung814@gmail.com",
     /* Second member's full name (leave blank if none) */
-    "Shinho Jung",
+    "Fernando Torres",
     /* Second member's email address (leave blank if none) */
-    "shinhojung814@gmail.com"};
+    "ftorres9@liverpool.com"};
 
 /* single word (4) or double word (8) alignment */
 #define ALIGNMENT 8
@@ -43,11 +44,39 @@ team_t team = {
 
 #define SIZE_T_SIZE (ALIGN(sizeof(size_t)))
 
+/* Word and header/footer size (bytes) */
+#define WSIZE 4
+/* Double word size (bytes) */
+#define DSIZE 8
+/* Extend heap by this amount (bytes) */
+#define CHUNKSIZE (1 << 12)
+
+#define MAX(x, y) ((x) > (y) ? (x) : (y))
+
+/* Pack a size and allocated bit into a word */
+#define PACK(size, alloc) ((size) | (alloc))
+
+/* Read and write a word at address p */
+#define GET(p) (*(unsigned int *)(p))
+#define PUT(p, val) (*(unsigned int *)(p) = (val))
+
+/* Read the size and allocated fields from address p */
+#define GET_SIZE(p) (GET(p) & ~0x7)
+#define GET_ALLOC(p) (GET(p) & 0x1)
+
+/* Given block ptr bp, compute address of its header and footer */
+#define HDRP(bp) ((char *)(bp) - WSIZE)
+#define FTRP(bp) ((char *)(bp) + GET_SIZE(HDRP(bp)) - DSIZE)
+
+/* Given block ptr pb, compute address of next and previous blocks */
+#define NEXT_BLKP(bp) ((char *)(bp) + GET_SIZE(((char *)(bp) - WSIZE)))
+#define PREV_BLKP(bp) ((char *)(bp) - GET_SIZE(((char *)(bp) - DSIZE)))
+
 int mm_init(void);
 
 void *mm_malloc(size_t size);
-void *mm_realloc(void *ptr, size_t size);
 void mm_free(void *bp);
+void *mm_realloc(void *ptr, size_t size);
 
 static void *extend_heap(size_t words);
 static void *coalesce(void *bp);
@@ -114,6 +143,16 @@ void *mm_malloc(size_t size)
     return bp;
 }
 
+/* mm_free - Freeing a block does nothing. */
+void mm_free(void *bp)
+{
+    size_t size = GET_SIZE(HDRP(bp));
+
+    PUT(HDRP(bp), PACK(size, 0));
+    PUT(FTRP(bp), PACK(size, 0));
+    coalesce(bp);
+}
+
 /* mm_realloc - Implemented simply in terms of mm_malloc and mm_free */
 void *mm_realloc(void *ptr, size_t size)
 {
@@ -124,22 +163,16 @@ void *mm_realloc(void *ptr, size_t size)
     newptr = mm_malloc(size);
     if (newptr == NULL)
         return NULL;
-    copySize = *(size_t *)((char *)oldptr - SIZE_T_SIZE);
+
+    copySize = GET_SIZE(HDRP(oldptr));
+
     if (size < copySize)
         copySize = size;
+
     memcpy(newptr, oldptr, copySize);
     mm_free(oldptr);
+
     return newptr;
-}
-
-/* mm_free - Freeing a block does nothing. */
-void mm_free(void *bp)
-{
-    size_t size = GET_SIZE(HDRP(bp));
-
-    PUT(HDRP(bp), PACK(size, 0));
-    PUT(FTRP(bp), PACK(size, 0));
-    coalesce(bp);
 }
 
 static void *extend_heap(size_t words)
