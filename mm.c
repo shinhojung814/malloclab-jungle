@@ -86,6 +86,7 @@ static void *find_fit(size_t asize);
 static void place(void *bp, size_t asize);
 
 static char *heap_listp;
+static char *next_bp;
 
 /* mm_init - initialize the malloc package. */
 int mm_init(void) {
@@ -106,6 +107,8 @@ int mm_init(void) {
     /* Extend the empty heap with a free block of CHUNKSIZE bytes */
     if (extend_heap(CHUNKSIZE / WSIZE) == NULL)
         return -1;
+    
+    next_bp = heap_listp;
 
     return 0;
 }
@@ -226,22 +229,33 @@ static void *coalesce(void *bp) {
         PUT(FTRP(NEXT_BLKP(bp)), PACK(size, 0));
         bp = PREV_BLKP(bp);
     }
+    next_bp = bp;
 
     return bp;
 }
 
 static void *find_fit(size_t asize) {
-    /* First-fit search */
     void *bp;
+    static char *next_bp;
 
-    for (bp = heap_listp; GET_SIZE(HDRP(bp)) > 0; bp = NEXT_BLKP(bp)) {
+    bp = next_bp;
+
+    while (1) {
         if (!GET_ALLOC(HDRP(bp)) && (asize <= GET_SIZE(HDRP(bp)))) {
+            next_bp = bp;
             return bp;
         }
-    }
+        
+        bp = NEXT_BLKP(bp);
 
-    /* No fit */
-    return NULL;
+        if (GET_SIZE(HDRP(bp)) == 0) {
+            bp = heap_listp;
+        }
+
+        if (bp == next_bp) {
+            return NULL;
+        }
+    }
 }
 
 static void place(void *bp, size_t asize) {
