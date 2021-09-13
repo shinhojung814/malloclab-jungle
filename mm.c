@@ -223,8 +223,7 @@ static void *coalesce(void *bp) {
 
     /* Case 4 */
     else {
-        size += GET_SIZE(HDRP(PREV_BLKP(bp))) +
-                GET_SIZE(FTRP(NEXT_BLKP(bp)));
+        size += GET_SIZE(HDRP(PREV_BLKP(bp))) + GET_SIZE(FTRP(NEXT_BLKP(bp)));
         PUT(HDRP(PREV_BLKP(bp)), PACK(size, 0));
         PUT(FTRP(NEXT_BLKP(bp)), PACK(size, 0));
         bp = PREV_BLKP(bp);
@@ -236,7 +235,6 @@ static void *coalesce(void *bp) {
 
 static void *find_fit(size_t asize) {
     void *bp;
-    static char *next_bp;
 
     bp = next_bp;
 
@@ -256,6 +254,7 @@ static void *find_fit(size_t asize) {
             return NULL;
         }
     }
+    return NULL;
 }
 
 static void place(void *bp, size_t asize) {
