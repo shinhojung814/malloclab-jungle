@@ -90,7 +90,7 @@ static char *heap_listp;
 /* mm_init - initialize the malloc package. */
 int mm_init(void) {
     /* Create the initial empty heap */
-    if ((heap_listp = mem_sbrk(4 * WSIZE)) == (void *)-1)
+    if ((heap_listp = mem_sbrk(4 * WSIZE)) == (void *) - 1)
         return -1;
 
     /* Alignment padding */
