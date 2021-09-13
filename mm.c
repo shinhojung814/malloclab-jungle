@@ -51,7 +51,7 @@ team_t team = {
 /* Double word size (bytes) */
 #define DSIZE 8
 /* Extend heap by this amount (bytes) */
-#define CHUNKSIZE (1 << 12)
+#define CHUNKSIZE (1 << 11)
 
 #define MAX(x, y) ((x) > (y) ? (x) : (y))
 
