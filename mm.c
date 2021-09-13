@@ -21,9 +21,11 @@ team_t team = {
     /* First member's full name */
     "Shinho Jung",
     /* First member's email address */
-    "shinhojung814@gmail.com"
+    "shinhojung814@gmail.com",
     /* Second member's full name (leave blank if none) */
+    "Shinho Jung",
     /* Second member's email address (leave blank if none) */
+    "shinhojung814@gmail.com"
     };
 
 #include <stdio.h>
