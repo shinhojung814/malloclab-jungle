@@ -254,7 +254,6 @@ static void *find_fit(size_t asize) {
             return NULL;
         }
     }
-    return NULL;
 }
 
 static void place(void *bp, size_t asize) {
