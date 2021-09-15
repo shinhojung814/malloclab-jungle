@@ -15,7 +15,6 @@
 #include <assert.h>
 #include <unistd.h>
 #include <string.h>
-#include <string.h>
 
 #include "mm.h"
 #include "memlib.h"
@@ -102,6 +101,7 @@ int mm_init(void) {
     PUT(heap_listp + (2 * WSIZE), PACK(DSIZE, 1));
     /* Epilogue header */
     PUT(heap_listp + (3 * WSIZE), PACK(0, 1));
+
     heap_listp += (2 * WSIZE);
 
     /* Extend the empty heap with a free block of CHUNKSIZE bytes */
@@ -117,9 +117,9 @@ int mm_init(void) {
 Always allocate a block whose size is a multiple of the alignment. */
 
 void *mm_malloc(size_t size) {
+    char *bp;
     size_t asize;
     size_t extendsize;
-    char *bp;
 
     /* Ignore spurious requests */
     if (size == 0)
@@ -139,9 +139,12 @@ void *mm_malloc(size_t size) {
 
     /* No fit found. Get more memory and place the block */
     extendsize = MAX(asize, CHUNKSIZE);
+
     if ((bp = extend_heap(extendsize / WSIZE)) == NULL)
         return NULL;
+
     place(bp, asize);
+
     return bp;
 }
 
@@ -161,6 +164,7 @@ void *mm_realloc(void *ptr, size_t size) {
     size_t copySize;
 
     newptr = mm_malloc(size);
+
     if (newptr == NULL)
         return NULL;
 
@@ -181,6 +185,7 @@ static void *extend_heap(size_t words) {
 
     /* Allocate an even number of words to maintain alignment */
     size = (words % 2) ? (words + 1) * WSIZE : words * WSIZE;
+
     if ((long)(bp = mem_sbrk(size)) == -1)
         return NULL;
 
@@ -209,6 +214,7 @@ static void *coalesce(void *bp) {
     /* Case 2 */
     else if (prev_alloc && !next_alloc) {
         size += GET_SIZE(HDRP(NEXT_BLKP(bp)));
+
         PUT(HDRP(bp), PACK(size, 0));
         PUT(FTRP(bp), PACK(size, 0));
     }
@@ -216,16 +222,20 @@ static void *coalesce(void *bp) {
     /* Case 3 */
     else if (!prev_alloc && next_alloc) {
         size += GET_SIZE(HDRP(PREV_BLKP(bp)));
+
         PUT(FTRP(bp), PACK(size, 0));
         PUT(HDRP(PREV_BLKP(bp)), PACK(size, 0));
+
         bp = PREV_BLKP(bp);
     }
 
     /* Case 4 */
     else {
         size += GET_SIZE(HDRP(PREV_BLKP(bp))) + GET_SIZE(FTRP(NEXT_BLKP(bp)));
+
         PUT(HDRP(PREV_BLKP(bp)), PACK(size, 0));
         PUT(FTRP(NEXT_BLKP(bp)), PACK(size, 0));
+
         bp = PREV_BLKP(bp);
     }
     next_bp = bp;
@@ -263,10 +273,13 @@ static void place(void *bp, size_t asize) {
     if ((csize - asize) >= (2 * DSIZE)) {
         PUT(HDRP(bp), PACK(asize, 1));
         PUT(FTRP(bp), PACK(asize, 1));
+
         bp = NEXT_BLKP(bp);
+
         PUT(HDRP(bp), PACK(csize - asize, 0));
         PUT(FTRP(bp), PACK(csize - asize, 0));
     }
+    
     else {
         PUT(HDRP(bp), PACK(csize, 1));
         PUT(FTRP(bp), PACK(csize, 1));
