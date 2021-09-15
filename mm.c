@@ -15,7 +15,6 @@
 #include <assert.h>
 #include <unistd.h>
 #include <string.h>
-#include <string.h>
 
 #include "mm.h"
 #include "memlib.h"
@@ -269,25 +268,22 @@ static void *coalesce(void *bp) {
 }
 
 static void *find_fit(size_t asize) {
-    char *bp = heap_listp;
+    char *strt = heap_listp;
 
     while (1) {
-        bp = SUCC(bp);
+        strt = SUCC(strt);
 
-        if (bp == NULL)
+        if (strt == NULL)
             break;
 
-        if (!GET_ALLOC(HDRP(bp)) && (asize <= GET_SIZE(HDRP(bp)))) {
-            return bp;
-        }
+        if (!GET_ALLOC(HDRP(strt)) && (asize <= GET_SIZE(HDRP(strt))))
+            return strt;
     }
     return NULL;
 }
 
 static void place(void *bp, size_t asize) {
-    size_t csize;
-
-    csize = GET_SIZE(HDRP(bp));
+    size_t csize = GET_SIZE(HDRP(bp));
 
     if ((csize - asize) >= (2 * DSIZE)) {
         PUT(HDRP(bp), PACK(asize, 1));
