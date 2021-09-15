@@ -50,7 +50,7 @@ team_t team = {
 /* Double word size (bytes) */
 #define DSIZE 8
 /* Extend heap by this amount (bytes) */
-#define CHUNKSIZE (1 << 14)
+#define CHUNKSIZE (1 << 10)
 
 #define MAX(x, y) ((x) > (y) ? (x) : (y))
 
@@ -139,11 +139,10 @@ void *mm_malloc(size_t size) {
     /* Ignore spurious requests */
     if (size == 0)
         return NULL;
-    if (size <= DSIZE)
-        asize = 2 * DSIZE;
-    else
-        asize = DSIZE * ((size + (DSIZE) + (DSIZE - 1)) / DSIZE);
+    
+    asize = make_size(size);
 
+    /* Search the free list for a fit */
     if ((bp = find_fit(asize)) != NULL) {
         place(bp, asize);
         return bp;
@@ -272,30 +271,17 @@ static void *coalesce(void *bp) {
 
 static void *find_fit(size_t asize) {
     char *bp = heap_listp;
-    char *best_bp;
-    size_t best_size = NULL;
 
-    for (bp = SUCC(bp); bp != NULL; bp = SUCC(bp)) {
+    while (1) {
+        bp = SUCC(bp);
 
-        size_t new_size = GET_SIZE(HDRP(bp));
+        if (bp == NULL)
+            break;
 
-        if(!GET_ALLOC(HDRP(bp)) && (asize <= new_size)) {
-            if (best_size == NULL) {
-                best_size = new_size;
-                best_bp = bp;
-            }
-            
-            else if (best_size > new_size) {
-                best_size = new_size;
-                best_bp = bp;
-            }
-        }
+        if (!GET_ALLOC(HDRP(bp)) && (asize <= GET_SIZE(HDRP(bp))))
+            return bp;
     }
-    if (best_size == NULL) {
-        return NULL;
-
-    } else
-        return best_bp;
+    return NULL;
 }
 
 static void place(void *bp, size_t asize) {
