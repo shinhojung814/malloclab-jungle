@@ -252,6 +252,8 @@ static void *coalesce(void *bp) {
 
     /* Case 4 */
     else {
+        char *next = NEXT_BLKP(bp);
+
         size += GET_SIZE(HDRP(PREV_BLKP(bp))) + GET_SIZE(FTRP(NEXT_BLKP(bp)));
 
         PUT(HDRP(PREV_BLKP(bp)), PACK(size, 0));
@@ -260,7 +262,7 @@ static void *coalesce(void *bp) {
         bp = PREV_BLKP(bp);
 
         change(bp);
-        change(NEXT_BLKP(bp));
+        change(next);
         connect_root(bp);
     }
 
