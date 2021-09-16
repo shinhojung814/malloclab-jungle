@@ -304,7 +304,6 @@ static void place(void *bp, size_t asize) {
     if ((csize - asize) >= (2 * DSIZE)) {
         PUT(HDRP(bp), PACK(asize, 1));
         PUT(FTRP(bp), PACK(asize, 1));
-        coalesce(bp);
 
         PUT_ADDRESS(PRED_LOC(NEXT_BLKP(bp)), PRED(bp));
         PUT_ADDRESS(SUCC_LOC(NEXT_BLKP(bp)), SUCC(bp));
